@@ -46,33 +46,35 @@ public class BattmonMqttSettingsActivity extends AppCompatActivity {
 
         @Override
         public boolean onPreferenceChange(Preference preference, Object o) {
-            String key = findPreference(preference.getKey()).toString();
-            util.LOG( "SettingsFragment onSharedPreferenceChanged called with key="+key+", new value="+o.toString());
-
+            boolean validated=true;
             if (preference != null) {
-
-/*
-                if (!(preference instanceof CheckBoxPreference)) {
-                    String value = sharedPreferences.getString(preference.getKey(), "");
-                    Log.i(TAG, "changed key/value: " + key+"/"+value);
+                String key = findPreference(preference.getKey()).toString();
+                String value=o.toString();
+                util.LOG( "SettingsFragment onSharedPreferenceChanged called with key="+key+", new value="+value);
+                if(key.equals(getResources().getString(R.string.mqtt_port))){
+                    int test=0;
+                    try{
+                        Integer.parseInt(value);
+                    }catch(Exception ex){
+                        validated=false;
+                    }
+                    if(test<1 || test>65536){
+                        validated=false;
+                    }
                 }
-                if(key==pref.PREF_MQTT_HOST){
-                    sharedPreferences.edit().putString(pref.PREF_MQTT_HOST, sharedPreferences.getString(preference.getKey(), "192.168.0.40"));
-                }else if(key==pref.PREF_MQTT_INTERVAL){
-                    sharedPreferences.edit().putString(pref.PREF_MQTT_INTERVAL, sharedPreferences.getString(preference.getKey(), "15"));
-                }else if(key==pref.PREF_MQTT_PORT){
-                    sharedPreferences.edit().putString(pref.PREF_MQTT_PORT, sharedPreferences.getString(preference.getKey(), "1883"));
-                }else if(key==pref.PREF_MQTT_TOPIC){
-                    sharedPreferences.edit().putString(pref.PREF_MQTT_TOPIC, sharedPreferences.getString(preference.getKey(), "geraet1"));
-                }else if(key==pref.PREF_MQTT_ENABLED){
-                    sharedPreferences.edit().putBoolean(pref.PREF_MQTT_ENABLED, sharedPreferences.getBoolean(preference.getKey(),true));
+                else if(key.equals(getResources().getString(R.string.mqtt_interval))){
+                    int test=0;
+                    try{
+                        Integer.parseInt(value);
+                    }catch(Exception ex){
+                        validated=false;
+                    }
+                    if(test<1 || test>65536){
+                        validated=false;
+                    }
                 }
-                sharedPreferences.edit().apply();
-*/
-//                MySharedPreferences mySharedPreferences=new MySharedPreferences(getContext());
-//                MainActivity.getInstance().updateUI("onSharedPreferenceChanged: " + mySharedPreferences.toString());
             }
-            return true; //true=update and commit
+            return validated; //true=update and commit
         }
     }
 }
