@@ -25,7 +25,7 @@ public class PeriodWorker extends Worker{
     if (isServiceRunning(getApplicationContext(), "ForeService")
         || !NotificationConfig.isNotificationOn()) {
       util.LOG("doWork: notification already on or service already running");
-      return Result.success();
+      //return Result.success();
     }
     Intent intent = new Intent(getApplicationContext(), ForeService.class);
     intent.setAction("android.intent.action.RESPOND_VIA_MESSAGE");
