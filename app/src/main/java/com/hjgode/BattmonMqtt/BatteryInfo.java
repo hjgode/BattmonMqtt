@@ -26,7 +26,8 @@ public class BatteryInfo {
             level=l;
             charging=c;
         }
-        public String ToString(){
+        @Override
+        public String toString(){
             return level +"% "+ (charging?"charging":"discharging");
         }
     }

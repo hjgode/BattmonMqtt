@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.CompoundButton;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import java.util.concurrent.TimeUnit;
@@ -22,6 +23,7 @@ import androidx.work.WorkManager;
 public class MainActivity extends AppCompatActivity {
 
   static MainActivity mainActivity;
+  TextView txtBattInfo;
 
   private ToggleButton toggleButton;
   String[] perms=new String[]{
@@ -35,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     setContentView(R.layout.activity_main);
     mainActivity=this;
 
+    txtBattInfo=findViewById(R.id.txtBattInfo);
+
     SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(this);
     String device=sharedPreferences.getString(getResources().getString(R.string.mqtt_topic),
             getResources().getString(R.string.mqtt_default_topic));
@@ -42,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
       device = Build.DEVICE;
       sharedPreferences.edit().putString(getResources().getString(R.string.mqtt_topic),device);
       sharedPreferences.edit().apply();
+      if(sharedPreferences.edit().commit()){
+        util.LOG("Changed default device to "+device+" and persisted");
+      }
     }
 
     initView();
@@ -69,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
   @Override
   protected void onResume() {
     super.onResume();
+    BatteryInfo.BattInfo batteryInfo=BatteryInfo.getBattInfo(getApplicationContext());
+    txtBattInfo.setText(batteryInfo.toString());
   }
 
   private void setWork() {
