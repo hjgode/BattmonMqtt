@@ -16,8 +16,10 @@ public class Mqtt {
         util.LOG("doPublish-Prefs="+util.dumpPrefs(sharedPreferences));
         String host=sharedPreferences.getString(context.getResources().getString(R.string.mqtt_host),
                 context.getResources().getString(R.string.mqtt_default_host));
-        int port=sharedPreferences.getInt(context.getResources().getString(R.string.mqtt_port),
-                Integer.parseInt(context.getResources().getString(R.string.mqtt_default_port)));
+
+        String portS=sharedPreferences.getString(context.getResources().getString(R.string.mqtt_port),
+                context.getResources().getString(R.string.mqtt_default_port));
+        int port=Integer.parseInt(portS);
         String topic = "android/batteries/"+sharedPreferences.getString(context.getResources().getString(R.string.mqtt_topic),
                 context.getResources().getString(R.string.mqtt_default_topic));
         Mqtt3AsyncClient client = MqttClient.builder()

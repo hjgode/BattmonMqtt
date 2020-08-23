@@ -2,9 +2,11 @@ package com.hjgode.BattmonMqtt;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -32,6 +34,16 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     mainActivity=this;
+
+    SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(this);
+    String device=sharedPreferences.getString(getResources().getString(R.string.mqtt_topic),
+            getResources().getString(R.string.mqtt_default_topic));
+    if(device.equals(getResources().getString(R.string.mqtt_default_topic))) {
+      device = Build.DEVICE;
+      sharedPreferences.edit().putString(getResources().getString(R.string.mqtt_topic),device);
+      sharedPreferences.edit().apply();
+    }
+
     initView();
     setWork();
   }
@@ -62,9 +74,15 @@ public class MainActivity extends AppCompatActivity {
   private void setWork() {
     util.LOG("setWork...");
     util.LOG("doWork: creating periodicWorkRequest...");
+    SharedPreferences sharedPreferences=PreferenceManager.getDefaultSharedPreferences(this);
+    util.LOG("setWork-Prefs="+util.dumpPrefs(sharedPreferences));
+    String intervalS=sharedPreferences.getString(this.getResources().getString(R.string.mqtt_interval),
+            this.getResources().getString(R.string.mqtt_default_interval));
+    long interval=Long.parseLong(intervalS);
+
     //workmanager periodic work (not less than 15 minutes)
     PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest
-        .Builder(PeriodWorker.class, 16, TimeUnit.MINUTES)
+        .Builder(PeriodWorker.class, interval, TimeUnit.MINUTES)
         .build();
     WorkManager.getInstance().enqueueUniquePeriodicWork("pullwork", ExistingPeriodicWorkPolicy.KEEP, periodicWorkRequest);
   }
