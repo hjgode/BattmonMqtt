@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="interval">
+        <item>0.25 h</item>
+        <item>0.5 h</item>
+        <item>1 h</item>
+        <item>2 h</item>
+        <item>4 h</item>
+        <item>8 h</item>
+        <item>10 h</item>
+        <item>12 h</item>
+    </string-array>
+    <string-array name="interval_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>120</item>
+        <item>240</item>
+        <item>480</item>
+        <item>600</item>
+        <item>720</item>
+    </string-array>
+
+</resources>

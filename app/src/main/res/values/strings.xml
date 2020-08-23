@@ -1,4 +1,44 @@
 <resources>
-    <string name="app_name">KeepAlive</string>
-    <string name="hint">This is a notification bar</string>
+        <string name="app_name">BatteryMonMQTT v1.1</string>
+        <string name="title_activity_settings">SettingsActivity</string>
+
+        <!-- Preferences MQTT  -->
+        <string name="mqtt_header">MQTT Settings</string>
+        <string name="sync_header">Sync</string>
+
+        <!-- key names -->
+        <string name="mqtt_host">mqtt_host</string>
+        <string name="mqtt_interval">mqtt_interval</string>
+        <string name="mqtt_port">mqtt_port</string>
+        <string name="mqtt_topic">mqtt_topic</string>
+        <string name="mqtt_enbled">mqtt_enabled</string>
+
+        <string name="mqtthost_title">The MQTT host</string>
+        <string name="mqttport_title">The MQTT port</string>
+        <string name="mqtttopic_title">The MQTT topic to use</string>
+        <string name="mqttenable_title">Enable MQTT publishing</string>
+
+        <string name="mqtt_default_host">192.168.0.40</string>
+        <string name="mqtt_default_port">1883</string>
+        <string name="mqtt_default_interval">15</string>
+        <string name="mqtt_default_topic">geraet1</string>
+        <string name="mqtt_default_enabled">true</string>
+
+        <string name="hint">This is a notification bar</string>
+    <string name="title_activity_battmon_mqtt_settings">BattmonMqttSettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="action_settings">action_settings</string>
 </resources>

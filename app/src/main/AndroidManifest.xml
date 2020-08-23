@@ -3,26 +3,33 @@
     package="com.hjgode.BattmonMqtt">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
-        android:name="com.hjgode.BattmonMqtt.App"
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.hjgode.BattmonMqtt.MainActivity">
+        <activity
+            android:name=".BattmonMqttSettingsActivity"
+            android:label="@string/title_activity_battmon_mqtt_settings">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"
+                />
+        </activity>
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <service android:name="com.hjgode.BattmonMqtt.ForeService">
+        <service android:name=".ForeService">
             <intent-filter>
                 <action android:name="android.intent.action.PULL_UP" />
             </intent-filter>
