@@ -2,12 +2,17 @@ package com.hjgode.BattmonMqtt;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
+
 import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import static androidx.core.app.NotificationCompat.PRIORITY_HIGH;
 
@@ -15,13 +20,45 @@ public class ForeService extends Service {
 
   private static final String CHANNEL_ID = "fore";
   private static final String CHANNEL_NAME = "test";
+  private static final int NOTIFICATION_ID=10000;
+
   private Context context=this;
+  static LocalBroadcastManager broadcaster=null;
+  NotificationCompat.Builder notificationBuilder=null;
+  NotificationManager notificationManager=null;
+
   private Runnable runnable=new Runnable() {
     @Override
     public void run() {
-      Mqtt.doPublish(context);
+      SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(context);
+      boolean enabled = sharedPreferences.getBoolean(context.getResources().getString(R.string.mqtt_enbled),true);
+      MyNetwork.NetworkType networkType=MyNetwork.getNetworkType(context);
+      //do not start publish if not enabled
+      if(enabled){
+        //do not publish if not connected to unmetered network
+        if(networkType == MyNetwork.NetworkType.UNMETERED) {
+          sendResult("CLEAR");
+          sendResult("ForeService starting doPublish");
+          Mqtt.doPublish(context);
+        }else{
+          util.LOG("Not connected to home network. No doPublish()");
+          sendResult("Not connected to home network. No doPublish()");
+        }
+      }else{
+        util.LOG("MQTT publish not enabled. No doPublish()");
+        sendResult("MQTT publish not enabled. No doPublish()");
+      }
     }
   };
+
+  public void sendResult(String message) {
+    if(broadcaster==null)
+      broadcaster = LocalBroadcastManager.getInstance(this);
+    Intent intent = new Intent(Constants.RESULT_INTENT);
+    if(message != null)
+      intent.putExtra(Constants.SERVICE_MESSAGE, message);
+    broadcaster.sendBroadcast(intent);
+  }
 
   @Override
   public IBinder onBind(Intent intent) {
@@ -57,14 +94,22 @@ public class ForeService extends Service {
     util.LOG("ForeService onCreate called...");
     String title = "Battmon Mqtt";
     String body = "periodic publish running";
-    NotificationCompat.Builder notificationBuilder =
+
+    //to launch the activity when user taps notification
+    Intent notificationIntent = new Intent(this, MainActivity.class);
+    PendingIntent pendingIntent= PendingIntent.getActivity(this, 0,
+            notificationIntent, PendingIntent.FLAG_ONE_SHOT);
+
+    notificationBuilder =
         new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_stat_mqtt_battery)
             .setContentTitle(title)
             .setContentText(body)
+                .setContentIntent(pendingIntent)  //launch main activity
             .setPriority(PRIORITY_HIGH)
             .setStyle(new NotificationCompat.BigTextStyle().bigText(body).setBigContentTitle(title));
 
-    NotificationManager notificationManager =
+    notificationManager =
         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,
@@ -73,7 +118,7 @@ public class ForeService extends Service {
     }
 
     util.LOG("foreService: starting notification...");
-    startForeground(10000, notificationBuilder.build());
+    startForeground(NOTIFICATION_ID, notificationBuilder.build());
   }
 
 

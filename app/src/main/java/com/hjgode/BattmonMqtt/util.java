@@ -14,7 +14,7 @@ public class util {
         Map<String, ?> allEntries = sharedPreferences.getAll();
         for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
             Log.d("map values", entry.getKey() + ": " + entry.getValue().toString());
-            stringBuilder.append(entry.getKey() + ": " + entry.getValue().toString());
+            stringBuilder.append(entry.getKey() + ": " + entry.getValue().toString()+", ");
         }
         return stringBuilder.toString();
     }

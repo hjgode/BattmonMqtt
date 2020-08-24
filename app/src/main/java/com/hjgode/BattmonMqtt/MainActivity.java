@@ -1,21 +1,25 @@
 package com.hjgode.BattmonMqtt;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Build;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import java.util.concurrent.TimeUnit;
 
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
@@ -23,9 +27,10 @@ import androidx.work.WorkManager;
 public class MainActivity extends AppCompatActivity {
 
   static MainActivity mainActivity;
-  TextView txtBattInfo;
+  TextView txtBattInfo, log_text;
+  BroadcastReceiver receiver;
 
-  private ToggleButton toggleButton;
+  private Switch switchButton;
   String[] perms=new String[]{
           "android.permission.RECEIVE_BOOT_COMPLETED",
           "android.permission.INTERNET",
@@ -38,20 +43,49 @@ public class MainActivity extends AppCompatActivity {
     mainActivity=this;
 
     txtBattInfo=findViewById(R.id.txtBattInfo);
+    txtBattInfo.setMovementMethod(new ScrollingMovementMethod());
+    log_text=findViewById(R.id.log_text);
+    log_text.setMovementMethod(new ScrollingMovementMethod());
+
+    //restore content
+    if (savedInstanceState != null) {
+      // Restore value of members from saved state
+      String s = savedInstanceState.getString(Constants.LOG_TEXT);
+      log_text.setText(s);
+    } else {
+      // Probably initialize members with default values for a new instance
+
+    }
 
     SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(this);
     String device=sharedPreferences.getString(getResources().getString(R.string.mqtt_topic),
             getResources().getString(R.string.mqtt_default_topic));
-    if(device==getResources().getString(R.string.mqtt_default_topic)) {
+    if(device.equals(getResources().getString(R.string.mqtt_default_topic))) {
+      util.LOG("changing default device");
+      //ensure to use an Editor instance to change the value!
+      SharedPreferences.Editor editor=sharedPreferences.edit();
       device = Build.DEVICE;
-      sharedPreferences.edit().putString(getResources().getString(R.string.mqtt_topic),device);
-      sharedPreferences.edit().putString(getResources().getString(R.string.mqtt_default_topic),device);
-      sharedPreferences.edit().apply();
-      if(sharedPreferences.edit().commit()){
+      editor.putString(getResources().getString(R.string.mqtt_topic),device);
+//      editor.putString(getResources().getString(R.string.mqtt_default_topic),device);
+      editor.apply();
+      if(editor.commit()){
         util.LOG("Changed default device to "+device+" and persisted");
       }
+      util.LOG("Changed default device");
+      util.dumpPrefs(sharedPreferences);
     }
 
+    //show messages from background threads
+    receiver = new BroadcastReceiver() {
+      @Override
+      public void onReceive(Context context, Intent intent) {
+        String s = intent.getStringExtra(Constants.SERVICE_MESSAGE);
+        if(s.equals("CLEAR"))
+          log_text.setText("");
+        else
+          log_text.append(s+"\n");
+      }
+    };
     initView();
     setWork();
   }
@@ -79,6 +113,28 @@ public class MainActivity extends AppCompatActivity {
     super.onResume();
     BatteryInfo.BattInfo batteryInfo=BatteryInfo.getBattInfo(getApplicationContext());
     txtBattInfo.setText(batteryInfo.toString());
+    LocalBroadcastManager.getInstance(this).registerReceiver((receiver), new IntentFilter(Constants.RESULT_INTENT));
+  }
+
+  @Override
+  protected void onSaveInstanceState(Bundle bundle){
+    super.onSaveInstanceState(bundle);
+    String s=bundle.getString(Constants.LOG_TEXT);
+    log_text.setText(s);
+  }
+
+  //see onCreate
+//  @Override
+//  protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//    super.onRestoreInstanceState(savedInstanceState);
+//    String s=savedInstanceState.getString(Constants.LOG_TEXT);
+//    log_text.setText(s);
+//  }
+
+  @Override
+  protected void onPause(){
+    LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+    super.onPause();
   }
 
   private void setWork() {
@@ -122,11 +178,11 @@ public class MainActivity extends AppCompatActivity {
   }
 
   private void initView() {
-    toggleButton = findViewById(R.id.notification_switch);
-    toggleButton.setTextOff("foreground service is off");
-    toggleButton.setTextOn("foreground service is on and periodic work is running");
-    toggleButton.setChecked(NotificationConfig.isNotificationOn());
-    toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+    switchButton = findViewById(R.id.notification_switch);
+    switchButton.setTextOff("foreground service is off");
+    switchButton.setTextOn("foreground service is on and periodic work is running");
+    switchButton.setChecked(NotificationConfig.isNotificationOn());
+    switchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
       @Override
       public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         startWorker(getApplicationContext(), isChecked);
