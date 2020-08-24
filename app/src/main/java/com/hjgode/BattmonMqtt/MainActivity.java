@@ -42,9 +42,10 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(this);
     String device=sharedPreferences.getString(getResources().getString(R.string.mqtt_topic),
             getResources().getString(R.string.mqtt_default_topic));
-    if(device.equals(getResources().getString(R.string.mqtt_default_topic))) {
+    if(device==getResources().getString(R.string.mqtt_default_topic)) {
       device = Build.DEVICE;
       sharedPreferences.edit().putString(getResources().getString(R.string.mqtt_topic),device);
+      sharedPreferences.edit().putString(getResources().getString(R.string.mqtt_default_topic),device);
       sharedPreferences.edit().apply();
       if(sharedPreferences.edit().commit()){
         util.LOG("Changed default device to "+device+" and persisted");
