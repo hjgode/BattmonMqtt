@@ -1,8 +1,10 @@
 package com.hjgode.BattmonMqtt;
 
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 //import android.preference.EditTextPreference;
+import androidx.appcompat.app.AlertDialog;
 import androidx.preference.EditTextPreference;
 import android.util.Log;
 import android.view.MenuItem;
@@ -57,14 +59,26 @@ public class BattmonMqttSettingsActivity extends AppCompatActivity {
             port.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    try{
+                    try {
                         int p = Integer.parseInt(newValue.toString());
                         prefsedit.putInt(getResources().getString(R.string.mqtt_port), p);
                         prefsedit.apply();
-                        Toast.makeText(getContext(),newValue+" set as new port",Toast.LENGTH_LONG);
+
+                        Toast.makeText(getContext(), newValue + " set as new port", Toast.LENGTH_LONG);
                         return true;
                     }catch(Exception ex){
-                        Toast.makeText(getContext(),newValue+" is not a vallid port",Toast.LENGTH_LONG);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                        builder.setTitle("MQTT port");
+                        builder.setMessage("Only a number between 1 and 16484 is allowed");
+                        builder.setPositiveButton("OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,
+                                                        int which) {
+                                        Toast.makeText(getContext(), newValue + " set not a valid port", Toast.LENGTH_LONG).show();
+                                    }
+                                });//builder
+                        builder.show();
+//                        Toast.makeText(getContext(),newValue+" is not a valid port",Toast.LENGTH_LONG);
                         return false;
                     }
                 }
