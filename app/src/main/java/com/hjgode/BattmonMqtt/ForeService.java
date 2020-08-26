@@ -26,12 +26,16 @@ public class ForeService extends Service {
   static LocalBroadcastManager broadcaster=null;
   NotificationCompat.Builder notificationBuilder=null;
   NotificationManager notificationManager=null;
+  String title = "Battmon Mqtt";
 
   private Runnable runnable=new Runnable() {
     @Override
     public void run() {
       SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(context);
       boolean enabled = sharedPreferences.getBoolean(context.getResources().getString(R.string.mqtt_enbled),true);
+      BatteryInfo.BattInfo batteryInfo=BatteryInfo.getBattInfo(context);
+      updateNotification(batteryInfo.toString());
+
       MyNetwork.NetworkType networkType=MyNetwork.getNetworkType(context);
       //do not start publish if not enabled
       if(enabled){
@@ -92,7 +96,6 @@ public class ForeService extends Service {
   @Override
   public void onCreate() {
     util.LOG("ForeService onCreate called...");
-    String title = "Battmon Mqtt";
     String body = "periodic publish running";
 
     //to launch the activity when user taps notification
@@ -107,10 +110,14 @@ public class ForeService extends Service {
             .setContentText(body)
                 .setContentIntent(pendingIntent)  //launch main activity
             .setPriority(PRIORITY_HIGH)
+                .setAutoCancel(false) //do not automatic hide the notification
+                .setOnlyAlertOnce(true) //no alerts after first shown
             .setStyle(new NotificationCompat.BigTextStyle().bigText(body).setBigContentTitle(title));
 
     notificationManager =
         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+    //for Android 8 and higher, the app must create a notification channel before any notification!
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,
           CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
@@ -121,5 +128,32 @@ public class ForeService extends Service {
     startForeground(NOTIFICATION_ID, notificationBuilder.build());
   }
 
+  public void updateNotification(String text){
+    //to launch the activity when user taps notification
+    Intent notificationIntent = new Intent(this, MainActivity.class);
+    PendingIntent pendingIntent= PendingIntent.getActivity(this, 0,
+            notificationIntent, PendingIntent.FLAG_ONE_SHOT);
 
+    notificationBuilder =
+            new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_stat_mqtt_battery)
+                    .setContentTitle(title)
+                    .setContentText(text)
+                    .setContentIntent(pendingIntent)  //launch main activity
+                    .setPriority(PRIORITY_HIGH)
+                    .setAutoCancel(false) //do not automatic hide the notification
+                    .setOnlyAlertOnce(true) //no alerts after first shown
+                    .setStyle(new NotificationCompat.BigTextStyle().bigText(text).setBigContentTitle(title));
+
+    notificationManager =
+            (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+    //for Android 8 and higher, the app must create a notification channel before any notification!
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,
+              CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
+      notificationManager.createNotificationChannel(notificationChannel);
+    }
+    notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+  }
 }
