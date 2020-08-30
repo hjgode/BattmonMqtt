@@ -24,28 +24,52 @@ public class MyNetwork {
     @NonNull
     @SuppressWarnings("deprecation")
     public static NetworkType getNetworkType(@NonNull Context context) {
+        util.LOG("getting NetworkInfo...");
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo;
+//        NetworkInfo mWifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         try {
-            networkInfo = connectivityManager.getActiveNetworkInfo();
+            networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         } catch (Throwable t) {
+            util.LOG("getting NetworkInfo...crashed: "+t.getMessage());
             return NetworkType.ANY;
         }
+
 
         if (networkInfo == null || !networkInfo.isConnectedOrConnecting()) {
+            util.LOG("getting NetworkInfo...no NetworkInfor or not connected");
             return NetworkType.ANY;
+        }else{
+            if(networkInfo!=null) {
+                util.LOG("getting NetworkInfo...UMETERED");
+                return NetworkType.UNMETERED;
+            }
+            else {
+                util.LOG("getting NetworkInfo...not connected");
+                return NetworkType.ANY; //null or not connected
+            }
         }
 
+/*
         boolean metered = ConnectivityManagerCompat.isActiveNetworkMetered(connectivityManager);
         if (!metered) {
+            util.LOG("getting NetworkInfo...UNMETERED");
             return NetworkType.UNMETERED;
+        }else{
+            if(ConnectivityManager.EXTRA_NETWORK_TYPE=="WIFI")
+                return NetworkType.UNMETERED;
+            util.LOG("getting NetworkInfo...METERED");
+            return NetworkType.METERED;
         }
 
         if (isRoaming(connectivityManager, networkInfo)) {
+            util.LOG("getting NetworkInfo...CONNECTED");
             return NetworkType.CONNECTED;
         } else {
+            util.LOG("getting NetworkInfo...NOT_ROAMING");
             return NetworkType.NOT_ROAMING;
         }
+*/
     }
 
     @SuppressWarnings("deprecation")
