@@ -1,5 +1,5 @@
 <resources>
-        <string name="app_name">BattmonMQTT v1.1</string>
+        <string name="app_name">BattmonMQTT v1.2</string>
         <string name="title_activity_settings">SettingsActivity</string>
 
         <!-- Preferences MQTT  -->
